@@ -78,11 +78,11 @@ void GaussianBlurFilter::updateBlurParam(float blurriness) {
   } else if (blurriness < BLUR_LEVEL_4_LIMIT) {
     blurParam.depth = BLUR_LEVEL_4_DEPTH;
     blurParam.scale = BLUR_LEVEL_4_SCALE;
-    blurParam.value = (blurriness - BLUR_STABLE * 2.0) / (BLUR_LEVEL_4_LIMIT - BLUR_STABLE * 2.0) * 3.0;
+    blurParam.value = (blurriness - BLUR_STABLE) / (BLUR_LEVEL_4_LIMIT - BLUR_STABLE) * 6.0;
   } else {
     blurParam.depth = BLUR_LEVEL_5_DEPTH;
     blurParam.scale = BLUR_LEVEL_5_SCALE;
-    blurParam.value = 3.0 + (blurriness - BLUR_STABLE * 12.0) / (BLUR_LEVEL_5_LIMIT - BLUR_STABLE * 12.0) * 6.0;
+    blurParam.value = 6.0 + (blurriness - BLUR_STABLE * 12.0) / (BLUR_LEVEL_5_LIMIT - BLUR_STABLE * 12.0) * 5.0;
   }
 }
 
@@ -96,8 +96,8 @@ void GaussianBlurFilter::update(Frame frame, const tgfx::Rect& contentBounds,
   filtersBounds[0] = contentBounds;
   auto bounds = transformedBounds;
   for (int i = 0; i < blurParam.depth; i ++) {
-    bounds = tgfx::Rect::MakeXYWH(bounds.x() * blurParam.scale, bounds.y() * blurParam.scale,
-                                  bounds.width() * blurParam.scale, bounds.height() * blurParam.scale);
+    bounds = tgfx::Rect::MakeLTRB(bounds.left * blurParam.scale, bounds.top * blurParam.scale,
+                                  bounds.right * blurParam.scale, bounds.bottom * blurParam.scale);
     filtersBounds[i + 1] = bounds;
     filtersBounds[blurParam.depth * 2 - 1 - i] = bounds;
   }
@@ -116,8 +116,8 @@ void GaussianBlurFilter::draw(tgfx::Context* context, const FilterSource* source
   std::unique_ptr<FilterSource> filterSourcePtr;
   std::unique_ptr<FilterTarget> filterTargetPtr;
   
-  auto filterSource = source;
-  auto filterTarget = target;
+  FilterSource* filterSource = const_cast<FilterSource*>(source);
+  FilterTarget* filterTarget = nullptr;
   
   int boundsAnchor = 0;
   
@@ -151,16 +151,16 @@ void GaussianBlurFilter::draw(tgfx::Context* context, const FilterSource* source
     auto sourceBounds = filtersBounds[boundsAnchor++];
     auto targetBounds = filtersBounds[boundsAnchor];
     auto filterBuffer = i > 0 ? blurFilterBuffer[i - 1] : nullptr;
+    auto offsetMatrix =
+        tgfx::Matrix::MakeTrans((sourceBounds.left - targetBounds.left) * source->scale.x,
+                                (sourceBounds.top - targetBounds.top) * source->scale.y);
     if (i == 0) {
-      filterTarget = target;
+      filterTarget = const_cast<FilterTarget*>(target);
+      PreConcatMatrix(filterTarget, offsetMatrix);
     } else {
       filterBuffer->clearColor();
-      auto offsetMatrix =
-          tgfx::Matrix::MakeTrans((sourceBounds.left - targetBounds.left) * source->scale.x,
-                                  (sourceBounds.top - targetBounds.top) * source->scale.y);
       filterTargetPtr = filterBuffer->toFilterTarget(offsetMatrix);
       filterTarget = filterTargetPtr.get();
-
     }
     upBlurPass->update(currentFrame, sourceBounds, targetBounds, filtersBoundsScale);
     upBlurPass->updateParams(blurParam.value);

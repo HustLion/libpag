@@ -24,7 +24,7 @@ namespace pag {
 
 #define BLUR_LEVEL_1_LIMIT   10.0
 #define BLUR_LEVEL_2_LIMIT   15.0
-#define BLUR_LEVEL_3_LIMIT   60.0
+#define BLUR_LEVEL_3_LIMIT   55.0
 #define BLUR_LEVEL_4_LIMIT   120.0
 #define BLUR_LEVEL_5_LIMIT   300.0
 
@@ -41,8 +41,8 @@ namespace pag {
 #define BLUR_LEVEL_1_SCALE   1.0
 #define BLUR_LEVEL_2_SCALE   0.8
 #define BLUR_LEVEL_3_SCALE   0.5
-#define BLUR_LEVEL_4_SCALE   0.4
-#define BLUR_LEVEL_5_SCALE   0.4
+#define BLUR_LEVEL_4_SCALE   0.5
+#define BLUR_LEVEL_5_SCALE   0.5
 
 #define BLUR_STABLE  10.0
 

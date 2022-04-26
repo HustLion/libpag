@@ -27,9 +27,15 @@ GaussianBlurFilterPass::GaussianBlurFilterPass(BlurOptions options) : options(op
 
 std::string GaussianBlurFilterPass::onBuildFragmentShader() {
   if ((options & BlurOptions::Down) != BlurOptions::None) {
-    return BLUR_DOWN_FRAGMENT_SHADER;
+    if ((options & BlurOptions::RepeatEdgePixels) != BlurOptions::None) {
+      return BLUR_DOWN_FRAGMENT_SHADER;
+    }
+    return BLUR_DOWN_NO_REPEAT_EDGE_FRAGMENT_SHADER;
   } else if ((options & BlurOptions::Up) != BlurOptions::None) {
-    return BLUR_UP_FRAGMENT_SHADER;
+    if ((options & BlurOptions::RepeatEdgePixels) != BlurOptions::None) {
+      return BLUR_UP_FRAGMENT_SHADER;
+    }
+    return BLUR_UP_NO_REPEAT_EDGE_FRAGMENT_SHADER;
   } else {
     return nullptr;
   }
@@ -39,7 +45,6 @@ void GaussianBlurFilterPass::onPrepareProgram(tgfx::Context* context, unsigned i
   auto gl = tgfx::GLFunctions::Get(context);
   stepHandle = gl->getUniformLocation(program, "uStep");
   offsetHandle = gl->getUniformLocation(program, "uOffset");
-  repeatEdgeHandle = gl->getUniformLocation(program, "uRepeatEdge");
 }
 
 void GaussianBlurFilterPass::updateParams(float blurValue) {
@@ -55,35 +60,29 @@ void GaussianBlurFilterPass::onUpdateParams(tgfx::Context* context, const tgfx::
                                                                      blurriness * filterScale.x : 0,
                               (options & BlurOptions::Vertical) != BlurOptions::None ?
                                                                    blurriness * filterScale.y : 0);
-  gl->uniform1f(repeatEdgeHandle, (options & BlurOptions::RepeatEdgePixels) != BlurOptions::None);
 }
 
 std::vector<tgfx::Point> GaussianBlurFilterPass::computeVertices(const tgfx::Rect& inputBounds,
                                                                  const tgfx::Rect& outputBounds,
                                                                  const tgfx::Point& filterScale) {
-//  if ((options & BlurOptions::RepeatEdgePixels) != BlurOptions::None) {
+  if ((options & BlurOptions::RepeatEdgePixels) != BlurOptions::None) {
     return LayerFilter::computeVertices(inputBounds, outputBounds, filterScale);
-//  }
-//  std::vector<tgfx::Point> vertices = {};
-//  tgfx::Point contentPoint[4] = {{outputBounds.left, outputBounds.bottom},
-//                                 {outputBounds.right, outputBounds.bottom},
-//                                 {outputBounds.left, outputBounds.top},
-//                                 {outputBounds.right, outputBounds.top}};
-//
-//  auto outsetX = ((options & BlurOptions::Horizontal) != BlurOptions::None)
-//                ? -blurriness * filterScale.x : 0;
-//  auto outsetY = ((options & BlurOptions::Vertical) != BlurOptions::None)
-//                ? -blurriness * filterScale.y : 0;
-//
-//  tgfx::Point texturePoints[4] = {{outsetX, (inputBounds.height() + outsetY)},
-//                                  {(inputBounds.width() + outsetX), (inputBounds.height() + outsetY)},
-//                                  {outsetX, outsetY},
-//                                  {(inputBounds.width() + outsetX), outsetY}};
-//
-//  for (int ii = 0; ii < 4; ii++) {
-//    vertices.push_back(contentPoint[ii]);
-//    vertices.push_back(texturePoints[ii]);
-//  }
-//  return vertices;
+  }
+  std::vector<tgfx::Point> vertices = {};
+  tgfx::Point contentPoint[4] = {{outputBounds.left, outputBounds.bottom},
+                                 {outputBounds.right, outputBounds.bottom},
+                                 {outputBounds.left, outputBounds.top},
+                                 {outputBounds.right, outputBounds.top}};
+
+  tgfx::Point texturePoints[4] = {{0.0f, inputBounds.height()},
+                                  {inputBounds.width(), inputBounds.height()},
+                                  {0.0f, 0.0f},
+                                  {inputBounds.width(), 0.0f}};
+  
+  for (int ii = 0; ii < 4; ii++) {
+    vertices.push_back(contentPoint[ii]);
+    vertices.push_back(texturePoints[ii]);
+  }
+  return vertices;
 }
 }  // namespace pag

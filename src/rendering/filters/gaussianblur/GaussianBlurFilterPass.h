@@ -45,7 +45,6 @@ class GaussianBlurFilterPass : public LayerFilter {
  private:
   int stepHandle = -1;
   int offsetHandle = -1;
-  int repeatEdgeHandle = -1;
   
   BlurOptions options = BlurOptions::None;
   float blurriness = 0.0;

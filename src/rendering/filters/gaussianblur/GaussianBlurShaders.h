@@ -29,8 +29,6 @@ static const char BLUR_DOWN_FRAGMENT_SHADER[] = R"(
     uniform vec2 uStep;
     uniform vec2 uOffset;
 
-    uniform float uRepeatEdge;
-
     void main()
     {
         vec4 sum = texture2D(uTextureInput, vertexColor) * 4.0;
@@ -55,8 +53,6 @@ static const char BLUR_UP_FRAGMENT_SHADER[] = R"(
     uniform vec2 uStep;
     uniform vec2 uOffset;
     
-    uniform float uRepeatEdge;
-
     void main()
     {
         vec4 sum = texture2D(uTextureInput, vertexColor + vec2(-uStep.x * 2.0, 0.0) * uOffset);
@@ -67,6 +63,80 @@ static const char BLUR_UP_FRAGMENT_SHADER[] = R"(
         sum += texture2D(uTextureInput, vertexColor + vec2(uStep.x, -uStep.y) * uOffset) * 2.0;
         sum += texture2D(uTextureInput, vertexColor + vec2(0.0, -uStep.y * 2.0) * uOffset);
         sum += texture2D(uTextureInput, vertexColor + vec2(-uStep.x, -uStep.y) * uOffset) * 2.0;
+
+        vec4 color = sum / 12.0;
+    
+        gl_FragColor = color;
+    }
+    )";
+
+static const char BLUR_DOWN_NO_REPEAT_EDGE_FRAGMENT_SHADER[] = R"(
+    #version 100
+    precision highp float;
+    
+    varying vec2 vertexColor;
+    uniform sampler2D uTextureInput;
+    
+    uniform vec2 uStep;
+    uniform vec2 uOffset;
+    
+    float check(vec2 point) {
+        vec2 result = abs(step(vec2(1.0), point) - vec2(1.0)) * step(vec2(0.0), point);
+        return step(1.0, result.x * result.y);
+    }
+    
+    void main()
+    {
+        vec4 sum = texture2D(uTextureInput, vertexColor) * 4.0
+                 * check(vertexColor);
+        sum += texture2D(uTextureInput, vertexColor - uStep.xy * uOffset)
+             * check(vertexColor - uStep.xy * uOffset);
+        sum += texture2D(uTextureInput, vertexColor + uStep.xy * uOffset)
+             * check(vertexColor + uStep.xy * uOffset);
+        sum += texture2D(uTextureInput, vertexColor + vec2(uStep.x, -uStep.y) * uOffset)
+             * check(vertexColor + vec2(uStep.x, -uStep.y) * uOffset);
+        sum += texture2D(uTextureInput, vertexColor - vec2(uStep.x, -uStep.y) * uOffset)
+             * check(vertexColor - vec2(uStep.x, -uStep.y) * uOffset);
+
+        vec4 color = sum / 8.0;
+    
+        gl_FragColor = color;
+    }
+    )";
+
+static const char BLUR_UP_NO_REPEAT_EDGE_FRAGMENT_SHADER[] = R"(
+    #version 100
+    precision highp float;
+    
+    varying vec2 vertexColor;
+    uniform sampler2D uTextureInput;
+        
+    uniform vec2 uStep;
+    uniform vec2 uOffset;
+    
+    float check(vec2 point) {
+        vec2 result = abs(step(vec2(1.0), point) - vec2(1.0)) * step(vec2(0.0), point);
+        return step(1.0, result.x * result.y);
+    }
+    
+    void main()
+    {
+        vec4 sum = texture2D(uTextureInput, vertexColor + vec2(-uStep.x * 2.0, 0.0) * uOffset)
+                 * check(vertexColor + vec2(-uStep.x * 2.0, 0.0) * uOffset);
+        sum += texture2D(uTextureInput, vertexColor + vec2(-uStep.x, uStep.y) * uOffset) * 2.0
+             * check(vertexColor + vec2(-uStep.x, uStep.y) * uOffset);
+        sum += texture2D(uTextureInput, vertexColor + vec2(0.0, uStep.y * 2.0) * uOffset)
+             * check(vertexColor + vec2(0.0, uStep.y * 2.0) * uOffset);
+        sum += texture2D(uTextureInput, vertexColor + vec2(uStep.x, uStep.y) * uOffset) * 2.0
+             * check(vertexColor + vec2(uStep.x, uStep.y) * uOffset);
+        sum += texture2D(uTextureInput, vertexColor + vec2(uStep.x * 2.0, 0.0) * uOffset)
+             * check(vertexColor + vec2(uStep.x * 2.0, 0.0) * uOffset);
+        sum += texture2D(uTextureInput, vertexColor + vec2(uStep.x, -uStep.y) * uOffset) * 2.0
+             * check(vertexColor + vec2(uStep.x, -uStep.y) * uOffset);
+        sum += texture2D(uTextureInput, vertexColor + vec2(0.0, -uStep.y * 2.0) * uOffset)
+             * check(vertexColor + vec2(0.0, -uStep.y * 2.0) * uOffset);
+        sum += texture2D(uTextureInput, vertexColor + vec2(-uStep.x, -uStep.y) * uOffset) * 2.0
+             * check(vertexColor + vec2(-uStep.x, -uStep.y) * uOffset);
 
         vec4 color = sum / 12.0;
     

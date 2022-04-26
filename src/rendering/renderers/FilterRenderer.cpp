@@ -18,7 +18,6 @@
 
 #include "FilterRenderer.h"
 #include "base/utils/MatrixUtil.h"
-#include "gpu/Surface.h"
 #include "rendering/caches/LayerCache.h"
 #include "rendering/caches/RenderCache.h"
 #include "rendering/filters/DisplacementMapFilter.h"
@@ -28,6 +27,7 @@
 #include "rendering/filters/utils/FilterBuffer.h"
 #include "rendering/filters/utils/FilterHelper.h"
 #include "rendering/utils/SurfaceUtil.h"
+#include "tgfx/gpu/Surface.h"
 
 namespace pag {
 

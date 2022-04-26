@@ -1,8 +1,9 @@
 import { PAGImage } from './pag-image';
 import { PAGLayer } from './pag-layer';
 import { Vector, PAGVideoRange } from './types';
-import { wasmAwaitRewind } from './utils/decorators';
+import { destroyVerify, wasmAwaitRewind } from './utils/decorators';
 
+@destroyVerify
 @wasmAwaitRewind
 export class PAGImageLayer extends PAGLayer {
   public static Make(width: number, height: number, duration: number): PAGImageLayer {
@@ -50,7 +51,7 @@ export class PAGImageLayer extends PAGLayer {
   /**
    * The default image data of this layer, which is webp format.
    */
-  public imageBytes(): Uint8Array {
-    return this.wasmIns._imageBytes() as Uint8Array;
+  public imageBytes(): Uint8Array | null {
+    return this.wasmIns._imageBytes();
   }
 }

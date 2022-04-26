@@ -20,10 +20,10 @@
 #include <functional>
 #include "base/utils/TimeUtil.h"
 #include "base/utils/UniqueID.h"
-#include "core/Clock.h"
 #include "rendering/caches/ImageContentCache.h"
 #include "rendering/caches/LayerCache.h"
 #include "rendering/renderers/FilterRenderer.h"
+#include "tgfx/core/Clock.h"
 
 namespace pag {
 // 300M设置的大一些用于兜底，通常在大于20M时就开始随时清理。
@@ -360,8 +360,11 @@ void RenderCache::clearAllSnapshots() {
 }
 
 void RenderCache::clearExpiredSnapshots() {
-  while (!snapshotLRU.empty()) {
-    auto snapshot = snapshotLRU.back();
+  std::vector<ID> expiredSnapshots;
+  size_t releaseMemory = 0;
+  for (auto snapshotIter = snapshotLRU.rbegin(); snapshotIter != snapshotLRU.rend();
+       snapshotIter++) {
+    auto& snapshot = *snapshotIter;
     // 只有 Snapshot 数量可能会比较多，使用 LRU
     // 来避免遍历完整的列表，遇到第一个用过的就可以取消遍历。
     if (usedAssets.count((snapshot->assetID) > 0)) {
@@ -369,11 +372,15 @@ void RenderCache::clearExpiredSnapshots() {
     }
     snapshot->idleFrames++;
     if (snapshot->idleFrames < PURGEABLE_EXPIRED_FRAME &&
-        graphicsMemory < PURGEABLE_GRAPHICS_MEMORY) {
+        graphicsMemory + releaseMemory < PURGEABLE_GRAPHICS_MEMORY) {
       // 总显存占用未超过20M且所有缓存均未超过10帧未使用，跳过清理。
-      break;
+      continue;
     }
-    removeSnapshot(snapshot->assetID);
+    releaseMemory += snapshot->memoryUsage();
+    expiredSnapshots.push_back(snapshot->assetID);
+  }
+  for (const auto& snapshot : expiredSnapshots) {
+    removeSnapshot(snapshot);
   }
 }
 

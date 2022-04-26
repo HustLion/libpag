@@ -16,7 +16,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "gpu/opengl/webgl/WebGLDevice.h"
+#include "tgfx/gpu/opengl/webgl/WebGLDevice.h"
 #include "WebGLProcGetter.h"
 #include "core/utils/Log.h"
 
@@ -129,7 +129,7 @@ void WebGLDevice::onClearCurrent() {
   }
 }
 
-bool WebGLDevice::sharableWith(void*) const {
-  return false;
+bool WebGLDevice::sharableWith(void* nativeContext) const {
+  return nativeHandle == nativeContext;
 }
 }  // namespace tgfx

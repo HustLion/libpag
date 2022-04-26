@@ -20,15 +20,15 @@
 #include "GLFillRectOp.h"
 #include "GLRRectOp.h"
 #include "GLSurface.h"
-#include "core/Mask.h"
-#include "core/PathEffect.h"
-#include "core/TextBlob.h"
 #include "core/utils/MathExtra.h"
 #include "gpu/AARectEffect.h"
 #include "gpu/AlphaFragmentProcessor.h"
 #include "gpu/ColorShader.h"
 #include "gpu/TextureFragmentProcessor.h"
 #include "gpu/TextureMaskFragmentProcessor.h"
+#include "tgfx/core/Mask.h"
+#include "tgfx/core/PathEffect.h"
+#include "tgfx/core/TextBlob.h"
 
 namespace tgfx {
 GLCanvas::GLCanvas(Surface* surface) : Canvas(surface) {
@@ -51,7 +51,7 @@ Texture* GLCanvas::getClipTexture() {
     return nullptr;
   }
   if (clipID != state->clipID) {
-    _clipMask->clear();
+    _clipMask = Mask::Make(surface->width(), surface->height());
     _clipMask->fillPath(state->clip);
     clipID = state->clipID;
     // recycle the clip texture.

@@ -1,8 +1,9 @@
 import { PAG, Vector, Marker } from './types';
 import { PAGLayer } from './pag-layer';
-import { wasmAwaitRewind } from './utils/decorators';
+import { destroyVerify, wasmAwaitRewind } from './utils/decorators';
 import { proxyVector } from './utils/type-utils';
 
+@destroyVerify
 @wasmAwaitRewind
 export class PAGComposition extends PAGLayer {
   public static module: PAG;
@@ -121,8 +122,8 @@ export class PAGComposition extends PAGLayer {
   /**
    * The audio data of this composition, which is an AAC audio in an MPEG-4 container.
    */
-  public audioBytes(): Uint8Array {
-    return this.wasmIns._audioBytes() as Uint8Array;
+  public audioBytes(): Uint8Array | null {
+    return this.wasmIns._audioBytes();
   }
   /**
    * Returns the audio markers of this composition.
@@ -148,9 +149,5 @@ export class PAGComposition extends PAGLayer {
    */
   public getLayersUnderPoint(localX: number, localY: number): Vector<PAGLayer> {
     return proxyVector(this.wasmIns._getLayersUnderPoint(localX, localY) as Vector<any>, PAGLayer);
-  }
-
-  public destroy(): void {
-    this.wasmIns.delete();
   }
 }

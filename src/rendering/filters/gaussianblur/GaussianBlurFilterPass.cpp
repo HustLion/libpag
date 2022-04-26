@@ -61,29 +61,29 @@ void GaussianBlurFilterPass::onUpdateParams(tgfx::Context* context, const tgfx::
 std::vector<tgfx::Point> GaussianBlurFilterPass::computeVertices(const tgfx::Rect& inputBounds,
                                                                  const tgfx::Rect& outputBounds,
                                                                  const tgfx::Point& filterScale) {
-  if ((options & BlurOptions::RepeatEdgePixels) != BlurOptions::None) {
+//  if ((options & BlurOptions::RepeatEdgePixels) != BlurOptions::None) {
     return LayerFilter::computeVertices(inputBounds, outputBounds, filterScale);
-  }
-  std::vector<tgfx::Point> vertices = {};
-  tgfx::Point contentPoint[4] = {{outputBounds.left, outputBounds.bottom},
-                                 {outputBounds.right, outputBounds.bottom},
-                                 {outputBounds.left, outputBounds.top},
-                                 {outputBounds.right, outputBounds.top}};
-
-  auto deltaX = ((options & BlurOptions::Horizontal) != BlurOptions::None)
-                ? -blurriness * filterScale.x : 0;
-  auto deltaY = ((options & BlurOptions::Vertical) != BlurOptions::None)
-                ? -blurriness * filterScale.y : 0;
-
-  tgfx::Point texturePoints[4] = {
-      {deltaX, (outputBounds.height() + deltaY)},
-      {(outputBounds.width() + deltaX), (outputBounds.height() + deltaY)},
-      {deltaX, deltaY},
-      {(outputBounds.width() + deltaX), deltaY}};
-  for (int ii = 0; ii < 4; ii++) {
-    vertices.push_back(contentPoint[ii]);
-    vertices.push_back(texturePoints[ii]);
-  }
-  return vertices;
+//  }
+//  std::vector<tgfx::Point> vertices = {};
+//  tgfx::Point contentPoint[4] = {{outputBounds.left, outputBounds.bottom},
+//                                 {outputBounds.right, outputBounds.bottom},
+//                                 {outputBounds.left, outputBounds.top},
+//                                 {outputBounds.right, outputBounds.top}};
+//
+//  auto outsetX = ((options & BlurOptions::Horizontal) != BlurOptions::None)
+//                ? -blurriness * filterScale.x : 0;
+//  auto outsetY = ((options & BlurOptions::Vertical) != BlurOptions::None)
+//                ? -blurriness * filterScale.y : 0;
+//
+//  tgfx::Point texturePoints[4] = {{outsetX, (inputBounds.height() + outsetY)},
+//                                  {(inputBounds.width() + outsetX), (inputBounds.height() + outsetY)},
+//                                  {outsetX, outsetY},
+//                                  {(inputBounds.width() + outsetX), outsetY}};
+//
+//  for (int ii = 0; ii < 4; ii++) {
+//    vertices.push_back(contentPoint[ii]);
+//    vertices.push_back(texturePoints[ii]);
+//  }
+//  return vertices;
 }
 }  // namespace pag

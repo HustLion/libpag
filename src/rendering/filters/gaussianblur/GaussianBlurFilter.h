@@ -44,7 +44,6 @@ class GaussianBlurFilter : public LayerFilter {
 
   std::shared_ptr<FilterBuffer> blurFilterBuffer[BLUR_DEPTH_MAX] = {};
   tgfx::Rect filtersBounds[BLUR_DEPTH_MAX * 2 + 1] = {};
-  Frame currentFrame = {};
   tgfx::Point filtersBoundsScale = {};
   
   BlurParam blurParam = {};

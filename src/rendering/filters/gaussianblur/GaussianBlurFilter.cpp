@@ -103,7 +103,6 @@ void GaussianBlurFilter::update(Frame frame, const tgfx::Rect& contentBounds,
   }
   filtersBounds[blurParam.depth * 2] = transformedBounds;
   filtersBoundsScale = filterScale;
-  currentFrame = frame;
 }
 
 void GaussianBlurFilter::draw(tgfx::Context* context, const FilterSource* source,
@@ -140,7 +139,7 @@ void GaussianBlurFilter::draw(tgfx::Context* context, const FilterSource* source
                                 (sourceBounds.top - targetBounds.top) * source->scale.y);
     filterTargetPtr = filterBuffer->toFilterTarget(offsetMatrix);
     filterTarget = filterTargetPtr.get();
-    downBlurPass->update(currentFrame, sourceBounds, targetBounds, filtersBoundsScale);
+    downBlurPass->update(layerFrame, sourceBounds, targetBounds, filtersBoundsScale);
     downBlurPass->updateParams(blurParam.value);
     downBlurPass->draw(context, filterSource, filterTarget);
     filterSourcePtr = filterBuffer->toFilterSource(source->scale);
@@ -162,7 +161,7 @@ void GaussianBlurFilter::draw(tgfx::Context* context, const FilterSource* source
       filterTargetPtr = filterBuffer->toFilterTarget(offsetMatrix);
       filterTarget = filterTargetPtr.get();
     }
-    upBlurPass->update(currentFrame, sourceBounds, targetBounds, filtersBoundsScale);
+    upBlurPass->update(layerFrame, sourceBounds, targetBounds, filtersBoundsScale);
     upBlurPass->updateParams(blurParam.value);
     upBlurPass->draw(context, filterSource, filterTarget);
     if (i != 0) {

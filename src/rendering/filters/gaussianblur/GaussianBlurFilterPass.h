@@ -27,7 +27,7 @@ class GaussianBlurFilterPass : public LayerFilter {
   explicit GaussianBlurFilterPass(BlurOptions options);
   ~GaussianBlurFilterPass() override = default;
 
-  void updateParams(float blurValue);
+  void updateParams(float blurValue, bool isExpendBoundsValue);
 
  protected:
   std::string onBuildFragmentShader() override;
@@ -48,5 +48,6 @@ class GaussianBlurFilterPass : public LayerFilter {
   
   BlurOptions options = BlurOptions::None;
   float blurriness = 0.0;
+  bool isExpendBounds = false;
 };
 }  // namespace pag

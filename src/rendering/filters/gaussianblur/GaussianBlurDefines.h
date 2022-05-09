@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "pag/file.h"
 #include <type_traits>
 
 namespace pag {
@@ -51,6 +52,7 @@ struct BlurParam {
   float scale = BLUR_LEVEL_1_SCALE;
   float value = 0.0;
   bool repeatEdgePixels = true;
+  Enum blurDimensions = BlurDimensionsDirection::All;
 };
 
 enum class BlurOptions : unsigned {

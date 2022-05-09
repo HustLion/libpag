@@ -27,11 +27,7 @@ GaussianBlurFilterPass::GaussianBlurFilterPass(BlurOptions options) : options(op
 
 std::string GaussianBlurFilterPass::onBuildFragmentShader() {
   if ((options & BlurOptions::Down) != BlurOptions::None) {
-    if ((options & BlurOptions::RepeatEdgePixels) != BlurOptions::None) {
-      return BLUR_DOWN_FRAGMENT_SHADER;
-    } else {
-      return BLUR_DOWN_NO_REPEAT_EDGE_FRAGMENT_SHADER;
-    }
+    return BLUR_DOWN_FRAGMENT_SHADER;
   } else if ((options & BlurOptions::Up) != BlurOptions::None) {
     if ((options & BlurOptions::RepeatEdgePixels) != BlurOptions::None) {
       return BLUR_UP_FRAGMENT_SHADER;
@@ -49,8 +45,9 @@ void GaussianBlurFilterPass::onPrepareProgram(tgfx::Context* context, unsigned i
   offsetHandle = gl->getUniformLocation(program, "uOffset");
 }
 
-void GaussianBlurFilterPass::updateParams(float blurValue) {
+void GaussianBlurFilterPass::updateParams(float blurValue, bool isExpendBoundsValue) {
   blurriness = blurValue;
+  isExpendBounds = isExpendBoundsValue;
 }
 
 void GaussianBlurFilterPass::onUpdateParams(tgfx::Context* context, const tgfx::Rect& contentBounds,
@@ -67,7 +64,7 @@ void GaussianBlurFilterPass::onUpdateParams(tgfx::Context* context, const tgfx::
 std::vector<tgfx::Point> GaussianBlurFilterPass::computeVertices(const tgfx::Rect& inputBounds,
                                                                  const tgfx::Rect& outputBounds,
                                                                  const tgfx::Point& filterScale) {
-  if ((options & BlurOptions::RepeatEdgePixels) != BlurOptions::None) {
+  if (!isExpendBounds) {
     return LayerFilter::computeVertices(inputBounds, outputBounds, filterScale);
   }
   std::vector<tgfx::Point> vertices = {};
@@ -75,11 +72,14 @@ std::vector<tgfx::Point> GaussianBlurFilterPass::computeVertices(const tgfx::Rec
                                  {outputBounds.right, outputBounds.bottom},
                                  {outputBounds.left, outputBounds.top},
                                  {outputBounds.right, outputBounds.top}};
+  
+  auto expendX = -20.0f;
+  auto expendY = -30.0f;
 
-  tgfx::Point texturePoints[4] = {{0.0f, inputBounds.height()},
-                                  {inputBounds.width(), inputBounds.height()},
-                                  {0.0f, 0.0f},
-                                  {inputBounds.width(), 0.0f}};
+  tgfx::Point texturePoints[4] = {{expendX, inputBounds.height() - expendY},
+                                  {inputBounds.width() - expendX, inputBounds.height() - expendY},
+                                  {expendX, expendY},
+                                  {inputBounds.width() - expendX, expendY}};
   
   for (int ii = 0; ii < 4; ii++) {
     vertices.push_back(contentPoint[ii]);

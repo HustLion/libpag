@@ -99,14 +99,20 @@ void GaussianBlurFilter::update(Frame frame, const tgfx::Rect& contentBounds,
     bounds = tgfx::Rect::MakeLTRB(bounds.left * blurParam.scale, bounds.top * blurParam.scale,
                                   bounds.right * blurParam.scale, bounds.bottom * blurParam.scale);
     filtersBounds[i + 1] = bounds;
+    auto expendBounds = bounds;
     auto expandX = (blurParam.blurDimensions == BlurDimensionsDirection::All ||
-                    blurParam.blurDimensions == BlurDimensionsDirection::Horizontal)
-                    ? bounds.width() * 0.05f * filterScale.x : 0.0;
+                    blurParam.blurDimensions == BlurDimensionsDirection::Horizontal) &&
+                    !blurParam.repeatEdgePixels ? bounds.width() * 0.2f * filterScale.x : 0.0;
     auto expandY = (blurParam.blurDimensions == BlurDimensionsDirection::All ||
-                    blurParam.blurDimensions == BlurDimensionsDirection::Vertical)
-                    ? bounds.height() * 0.05f * filterScale.x : 0.0;
-    bounds.outset(expandX, expandY);
-    filtersBounds[blurParam.depth * 2 - 1 - i] = bounds;
+                    blurParam.blurDimensions == BlurDimensionsDirection::Vertical) &&
+                    !blurParam.repeatEdgePixels ? bounds.height() * 0.2f * filterScale.x : 0.0;
+    if (i == blurParam.depth - 1) {
+      expendBounds.outset(expandX, expandY);
+    } else {
+//      expendBounds.join(0, 0, expandX * 2.0f, expandY * 2.0f);
+      expendBounds.scale(1.4, 1.4);
+    }
+    filtersBounds[blurParam.depth * 2 - 1 - i] = expendBounds;
   }
   filtersBounds[blurParam.depth * 2] = transformedBounds;
   filtersBoundsScale = filterScale;

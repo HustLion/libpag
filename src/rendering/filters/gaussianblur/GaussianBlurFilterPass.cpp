@@ -73,8 +73,11 @@ std::vector<tgfx::Point> GaussianBlurFilterPass::computeVertices(const tgfx::Rec
                                  {outputBounds.left, outputBounds.top},
                                  {outputBounds.right, outputBounds.top}};
   
-  auto expendX = -20.0f;
-  auto expendY = -30.0f;
+  auto expendX = outputBounds.left - inputBounds.left;
+  auto expendY = outputBounds.top - inputBounds.top;
+  
+  expendX *= -1;
+  expendY *= -1;
 
   tgfx::Point texturePoints[4] = {{expendX, inputBounds.height() - expendY},
                                   {inputBounds.width() - expendX, inputBounds.height() - expendY},
